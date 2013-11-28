@@ -62,6 +62,7 @@
                 <!-- Subscription id: it displays current subscription(SUB1/SUB2/SUB3) information
                      on which currently voice call is active(in foreground). -->
                 <TextView android:id="@+id/subId"
+                          style="@style/IncallTextShadow"
                           android:layout_alignParentTop="true"
                           android:layout_alignParentStart="true"
                           android:layout_width="match_parent"
@@ -76,6 +77,7 @@
 
                 <!-- Name (or the phone number, if we don't have a name to display). -->
                 <TextView android:id="@+id/name"
+                    style="@style/IncallTextShadow"
                     android:layout_alignParentTop="true"
                     android:layout_alignParentStart="true"
                     android:layout_width="match_parent"
@@ -94,6 +96,7 @@
                     android:paddingEnd="@dimen/call_banner_name_number_right_padding"
                     android:orientation="horizontal">
                     <TextView android:id="@+id/phoneNumber"
+                        style="@style/IncallTextShadow"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -101,6 +104,7 @@
                         android:singleLine="true"
                         android:textDirection="ltr" />
                     <TextView android:id="@+id/label"
+                        style="@style/IncallTextShadow"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -125,6 +129,7 @@
                 <!-- Call type indication: a special label and/or branding
                      for certain kinds of calls (like "Internet call" for a SIP call.) -->
                 <TextView android:id="@+id/callTypeLabel"
+                    style="@style/IncallTextShadow"
                     android:layout_below="@id/labelAndNumber"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -165,6 +170,7 @@
                     android:background="@android:color/transparent"
                     android:visibility="gone">
                     <TextView android:id="@+id/providerLabel"
+                        style="@style/IncallTextShadow"
                         android:layout_width="0px"
                         android:layout_height="wrap_content"
                         android:layout_weight="6"
@@ -174,6 +180,7 @@
                         android:singleLine="true"
                         android:ellipsize="marquee" />
                     <TextView android:id="@+id/providerAddress"
+                        style="@style/IncallTextShadow"
                         android:layout_width="0px"
                         android:layout_height="wrap_content"
                         android:layout_weight="4"
@@ -190,6 +197,7 @@
                      indication like "Dialing" or "Incoming call" or "Call ended".
                      It's unused for the normal case of an active ongoing call. -->
                 <TextView android:id="@+id/callStateLabel"
+                          style="@style/IncallTextShadow"
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"
                           android:paddingTop="@dimen/provider_info_top_bottom_padding"
@@ -208,6 +216,7 @@
         </LinearLayout>
 
         <TextView android:id="@+id/callRecordingTimer"
+                  style="@style/IncallTextShadow"
                   android:layout_width="match_parent"
                   android:layout_height="match_parent"
                   android:textStyle="bold"
