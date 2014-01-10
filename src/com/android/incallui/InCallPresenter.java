@@ -16,11 +16,17 @@
 
 package com.android.incallui;
 
+import com.android.incallui.service.PhoneNumberService;
 import com.google.android.collect.Sets;
 import com.google.common.base.Preconditions;
 
 import android.content.Context;
 import android.content.Intent;
+import android.provider.Settings;
+import android.os.PowerManager;
+import android.os.RemoteException;
+import android.os.ServiceManager;
+import android.view.IWindowManager;
 
 import com.android.services.telephony.common.Call;
 import com.android.services.telephony.common.Call.Capabilities;
@@ -55,6 +61,7 @@ public class InCallPresenter implements CallList.Listener {
     private AccelerometerListener mAccelerometerListener;
     private ProximitySensor mProximitySensor;
     private boolean mServiceConnected = false;
+    private boolean mCallUiInBackground = false;
 
     /**
      * Is true when the activity has been previously started. Some code needs to know not just if
@@ -231,7 +238,7 @@ public class InCallPresenter implements CallList.Listener {
         // Renable notification shade and soft navigation buttons, if we are no longer in the
         // incoming call screen
         if (!newState.isIncoming()) {
-            if(mAccelerometerListener != null){
+            if (mAccelerometerListener != null) {
                 mAccelerometerListener.enableSensor(false);
             }
             CallCommandClient.getInstance().setSystemBarNavigationEnabled(true);
@@ -267,9 +274,12 @@ public class InCallPresenter implements CallList.Listener {
         mInCallState = newState;
 
         // Disable notification shade and soft navigation buttons
+        // on new incoming call as long it is no background call
         if (newState.isIncoming()) {
+            if (!mCallUiInBackground) {
             CallCommandClient.getInstance().setSystemBarNavigationEnabled(false);
-            if(mAccelerometerListener != null){
+            }
+            if (mAccelerometerListener != null) {
                 mAccelerometerListener.enableSensor(true);
             }
         }
@@ -650,7 +660,38 @@ public class InCallPresenter implements CallList.Listener {
             mInCallActivity = null;
         }
 
-        mStatusBarNotifier.updateNotificationAndLaunchIncomingCallUi(inCallState, mCallList);
+        // check if the user want to have the call UI in background and set it up
+        mCallUiInBackground = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.CALL_UI_IN_BACKGROUND, 0) == 1;
+
+        if (mCallUiInBackground) {
+            // get power service to check later if screen is on
+            final PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+            // check if keyguard is currently shown
+            final IWindowManager windowManagerService = IWindowManager.Stub.asInterface(
+                    ServiceManager.getService(Context.WINDOW_SERVICE));
+            boolean isKeyguardShowing = false;
+            try {
+                isKeyguardShowing = windowManagerService.isKeyguardLocked();
+            } catch (RemoteException e) {
+            }
+            mCallUiInBackground = pm.isScreenOn() && !isKeyguardShowing;
+        }
+
+        mStatusBarNotifier.updateNotificationAndLaunchIncomingCallUi(
+                inCallState, mCallList, mCallUiInBackground);
+    }
+
+    /**
+     * Starts the incoming call Ui immediately used by the incoming call
+     * notification sent from framework's notification mechanism
+     */
+    public void startIncomingCallUi() {
+        // Update the notification and UI this time with fullscreen intent
+        // First cancel the actual notification and then update
+        mStatusBarNotifier.cancelInCall();
+        mStatusBarNotifier.updateNotificationAndLaunchIncomingCallUi(
+                InCallState.INCALL, mCallList, false);
     }
 
     /**
