@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 dimfish
+ * Copyright (C) 2013-2014 dimfish
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.android.incallui;
 
+import android.app.StatusBarManager;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -36,12 +37,14 @@ public final class ProximityListener {
     private boolean mActive;
 
     private SensorManager mSensorManager;
+    private StatusBarManager mStatusBarManager;
     private Sensor mSensor;
 
 
     public ProximityListener(Context context) {
         mActive = false;
         mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
+        mStatusBarManager = (StatusBarManager)context.getSystemService(Context.STATUS_BAR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
     }
 
@@ -52,6 +55,7 @@ public final class ProximityListener {
             if (enable) {
                 mSensorManager.registerListener(mSensorListener, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
             } else {
+                updateStatusBar();
                 mSensorManager.unregisterListener(mSensorListener);
             }
         }
@@ -61,13 +65,29 @@ public final class ProximityListener {
         return mActive;
     }
 
+    private void updateStatusBar() {
+        if (mActive)
+            mStatusBarManager.disable(StatusBarManager.DISABLE_EXPAND 
+                | StatusBarManager.DISABLE_NOTIFICATION_ALERTS
+                | StatusBarManager.DISABLE_NOTIFICATION_TICKER 
+                | StatusBarManager.DISABLE_HOME
+                | StatusBarManager.DISABLE_RECENT 
+                | StatusBarManager.DISABLE_BACK
+                | StatusBarManager.DISABLE_SEARCH);
+        else
+            mStatusBarManager.disable(StatusBarManager.DISABLE_NONE);
+    }   
+
     SensorEventListener mSensorListener = new SensorEventListener() {
         public void onSensorChanged(SensorEvent event) {
             synchronized (this) {
                 float distance = event.values[0];
+                boolean oldStatus = mActive;
                 // compare against getMaximumRange to support sensors that only return 0 or 1
                 mActive = (distance >= 0.0 && distance < PROXIMITY_THRESHOLD &&
                            distance < mSensor.getMaximumRange());
+
+                if (mActive != oldStatus) updateStatusBar();
 
                 if (VDEBUG) Log.d(TAG, "mProximityListener.onSensorChanged active: " + mActive);
             }
