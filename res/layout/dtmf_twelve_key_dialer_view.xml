@@ -20,14 +20,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:layout_marginTop="1dip"
-    android:background="@color/background_dialpad" >
+    android:layout_marginTop="1dip" >
 
     <view class="com.android.incallui.DialpadFragment$HoverIgnoringLinearLayout"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
+        android:background="@color/background_dialpad">
 
 
         <!-- Display of the digits you've typed so far.
