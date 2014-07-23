@@ -35,7 +35,6 @@ import android.os.SystemProperties;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -134,33 +133,6 @@ public class CallCardFragment extends BaseFragment<CallCardPresenter, CallCardPr
         }
     };
 
-    /**
-     * A subclass of ImageView which allows animation by LayoutTransition
-     */
-    public static class PhotoImageView extends ImageView {
-        private boolean mHasFrame = false;
-
-        public PhotoImageView(Context context, AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        @Override
-        protected boolean setFrame(int l, int t, int r, int b) {
-            boolean changed = super.setFrame(l, t, r, b);
-            mHasFrame = true;
-            return changed;
-        }
-
-        @Override
-        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-            super.onSizeChanged(w, h, oldw, oldh);
-            // force recomputation of draw matrix
-            if (mHasFrame) {
-                setFrame(getLeft(), getTop(), getRight(), getBottom());
-            }
-        }
-    }
-
     @Override
     CallCardPresenter.CallCardUi getUi() {
         return this;
@@ -227,12 +199,6 @@ public class CallCardFragment extends BaseFragment<CallCardPresenter, CallCardPr
 
         CallRecorder recorder = CallRecorder.getInstance();
         recorder.addRecordingProgressListener(mRecordingProgressListener);
-
-        ViewGroup photoContainer = (ViewGroup) view.findViewById(R.id.photo_container);
-        LayoutTransition transition = photoContainer.getLayoutTransition();
-        transition.enableTransitionType(LayoutTransition.CHANGING);
-        transition.setAnimateParentHierarchy(false);
-        transition.setDuration(200);
 
         if (mVBEnabled) {
             mVBButton = (Button) view.findViewById(R.id.volumeBoost);
