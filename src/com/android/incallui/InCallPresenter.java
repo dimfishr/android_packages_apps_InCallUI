@@ -365,9 +365,6 @@ public class InCallPresenter implements CallList.Listener {
             if (tm.getMultiSimConfiguration() == MSimTelephonyManager.MultiSimVariants.DSDA) {
                 mInCallActivity.updateDsdaTab();
             }
-            if (newState != InCallState.DISCONNECTING) {
-                mInCallActivity.updateSystemBarTranslucency();
-            }
         }
 
         // Get the config whether we need to dismiss the keyguard screen, Google design is true.

@@ -69,8 +69,6 @@ public class CallButtonFragment
     private View mManageConferenceButton;
     private View mGenericMergeButton;
 
-    private int mHideMode = View.GONE;
-
     @Override
     CallButtonPresenter createPresenter() {
         // TODO: find a cleaner way to include audio mode provider than
@@ -235,7 +233,7 @@ public class CallButtonFragment
 
     @Override
     public void setEnabled(boolean isEnabled, boolean isVisible) {
-        getView().setVisibility(isVisible ? View.VISIBLE : mHideMode);
+        getView().setVisibility(isVisible ? View.VISIBLE : View.GONE);
 
         // The main end-call button spanning across the screen.
         mEndCallButton.setEnabled(isEnabled);
@@ -616,13 +614,5 @@ public class CallButtonFragment
     @Override
     public void hideExtraRow() {
        mExtraRowButton.setVisibility(View.GONE);
-    }
-
-    public void setHideMode(int hideMode) {
-        mHideMode = hideMode;
-        View v = getView();
-        if (v != null && v.getVisibility() != View.VISIBLE) {
-            v.setVisibility(hideMode);
-        }
     }
 }

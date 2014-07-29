@@ -39,11 +39,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.database.ContentObserver;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.Settings;
 import android.telephony.MSimTelephonyManager;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -80,19 +76,10 @@ public class InCallActivity extends Activity {
     private boolean mShowDialpadRequested;
     private boolean mConferenceManagerShown;
 
-    private boolean mUseFullScreenCallerPhoto;
-
     // This enum maps to Phone.SuppService defined in telephony
     private enum SuppService {
         UNKNOWN, SWITCH, SEPARATE, TRANSFER, CONFERENCE, REJECT, HANGUP;
     }
-
-    private ContentObserver mSettingsObserver = new ContentObserver(new Handler()) {
-        @Override
-        public void onChange(boolean selfChange, Uri uri) {
-            updateSettings();
-        }
-    };
 
     private int[] mCoverWindowCoords = null;
     private BroadcastReceiver mLidStateChangeReceiver = new BroadcastReceiver() {
@@ -142,11 +129,6 @@ public class InCallActivity extends Activity {
         setContentView(R.layout.incall_screen);
 
         initializeInCall();
-
-        getContentResolver().registerContentObserver(
-                Settings.System.getUriFor(Settings.System.INCOMING_CALL_STYLE),
-                false, mSettingsObserver);
-        updateSettings();
 
         // Handle the Intent we were launched with, but only if this is the
         // the very first time we're being launched (ie. NOT if we're being
@@ -480,7 +462,7 @@ public class InCallActivity extends Activity {
         if (mCallButtonFragment == null) {
             mCallButtonFragment = (CallButtonFragment) getFragmentManager()
                     .findFragmentById(R.id.callButtonFragment);
-            mCallButtonFragment.setEnabled(false, false);
+            mCallButtonFragment.getView().setVisibility(View.GONE);
         }
 
         if (mCallCardFragment == null) {
@@ -610,21 +592,15 @@ public class InCallActivity extends Activity {
         }
     }
 
-    public void updateSystemBarTranslucency() {
-        int flags = 0;
+    private void updateSystemBarTranslucency() {
+        final boolean doTranslucency = !mConferenceManagerShown;
         final Window window = getWindow();
-        final InCallPresenter.InCallState inCallState =
-                InCallPresenter.getInstance().getInCallState();
 
-        if (!mConferenceManagerShown) {
-            flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+        if (doTranslucency) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }
-        if (mUseFullScreenCallerPhoto && inCallState == InCallPresenter.InCallState.INCOMING) {
-            flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
-        }
-
-        window.setFlags(flags, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
-                WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         window.getDecorView().requestFitSystemWindows();
     }
 
@@ -913,17 +889,6 @@ public class InCallActivity extends Activity {
     private void onDialogDismissed() {
         mDialog = null;
         InCallPresenter.getInstance().onDismissDialog();
-    }
-
-    private void updateSettings() {
-        int incomingCallStyle = Settings.System.getInt(getContentResolver(),
-                Settings.System.INCOMING_CALL_STYLE,
-                Settings.System.INCOMING_CALL_STYLE_FULLSCREEN_PHOTO);
-        mUseFullScreenCallerPhoto =
-                incomingCallStyle == Settings.System.INCOMING_CALL_STYLE_FULLSCREEN_PHOTO;
-        mCallButtonFragment.setHideMode(mUseFullScreenCallerPhoto ? View.GONE : View.INVISIBLE);
-        mCallButtonFragment.getPresenter().setShowButtonsIfIdle(!mUseFullScreenCallerPhoto);
-        updateSystemBarTranslucency();
     }
 
     private void log(String msg) {
